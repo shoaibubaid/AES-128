@@ -1,0 +1,249 @@
+import numpy as np
+
+
+class AES:
+    # Rijndael S-box
+    sbox =  [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+             0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+             0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15, 
+             0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75, 
+             0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84, 
+             0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf, 
+             0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8, 
+             0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2, 
+             0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73, 
+             0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb, 
+             0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79,
+             0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08, 
+             0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a, 
+             0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e, 
+             0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf, 
+             0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16]
+
+    # Rijndael Inverted S-box
+    isbox = [0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb, 
+             0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb, 
+             0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e, 
+             0x08, 0x2e, 0xa1, 0x66, 0x28, 0xd9, 0x24, 0xb2, 0x76, 0x5b, 0xa2, 0x49, 0x6d, 0x8b, 0xd1, 0x25, 
+             0x72, 0xf8, 0xf6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xd4, 0xa4, 0x5c, 0xcc, 0x5d, 0x65, 0xb6, 0x92, 
+             0x6c, 0x70, 0x48, 0x50, 0xfd, 0xed, 0xb9, 0xda, 0x5e, 0x15, 0x46, 0x57, 0xa7, 0x8d, 0x9d, 0x84, 
+             0x90, 0xd8, 0xab, 0x00, 0x8c, 0xbc, 0xd3, 0x0a, 0xf7, 0xe4, 0x58, 0x05, 0xb8, 0xb3, 0x45, 0x06, 
+             0xd0, 0x2c, 0x1e, 0x8f, 0xca, 0x3f, 0x0f, 0x02, 0xc1, 0xaf, 0xbd, 0x03, 0x01, 0x13, 0x8a, 0x6b, 
+             0x3a, 0x91, 0x11, 0x41, 0x4f, 0x67, 0xdc, 0xea, 0x97, 0xf2, 0xcf, 0xce, 0xf0, 0xb4, 0xe6, 0x73, 
+             0x96, 0xac, 0x74, 0x22, 0xe7, 0xad, 0x35, 0x85, 0xe2, 0xf9, 0x37, 0xe8, 0x1c, 0x75, 0xdf, 0x6e, 
+             0x47, 0xf1, 0x1a, 0x71, 0x1d, 0x29, 0xc5, 0x89, 0x6f, 0xb7, 0x62, 0x0e, 0xaa, 0x18, 0xbe, 0x1b,
+             0xfc, 0x56, 0x3e, 0x4b, 0xc6, 0xd2, 0x79, 0x20, 0x9a, 0xdb, 0xc0, 0xfe, 0x78, 0xcd, 0x5a, 0xf4, 
+             0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xec, 0x5f, 
+             0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef, 
+             0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61, 
+             0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d]
+
+    # Constructor
+    def __init__(self, message, key):
+        self.message = message
+        self.key = key
+        self.subkeys = self.keyexpansion()
+    
+    #string representation for printing objects
+    def __repr__(self):
+        return f"AES(message='{self.message}', key='{self.key}')"
+    
+    def keyexpansion(self):
+
+        def g(subkey,round): #input: key state in column major order || output keystate with last word as g(initial_W4)
+            new_subkey = subkey.copy()
+            
+            #ROTWORD
+            temp           = new_subkey[12]
+            new_subkey[12] = new_subkey[13]
+            new_subkey[13] = new_subkey[14]
+            new_subkey[14] = new_subkey[15]
+            new_subkey[15] = temp
+
+            #SUBWORD
+            new_subkey[12] = hex(self.sbox[int(new_subkey[12],16)])
+            new_subkey[13] = hex(self.sbox[int(new_subkey[13],16)])
+            new_subkey[14] = hex(self.sbox[int(new_subkey[14],16)])
+            new_subkey[15] = hex(self.sbox[int(new_subkey[15],16)])
+
+            #XOR with ROUND CONSTANT
+            round_constant = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36]
+            new_subkey[12] = hex(int(new_subkey[12],16) ^ round_constant[round-1])
+
+            return new_subkey
+        
+        def keyexpansion_singleround(key,round):
+            subkey_of_next_round = g(key.copy(),round)
+
+            for i in range(4):
+                subkey_of_next_round[i] = hex(int(subkey_of_next_round[i],16) ^ int(subkey_of_next_round[i+12],16))
+            
+            for i in range(8):
+                subkey_of_next_round[i+4] = hex(int(subkey_of_next_round[i+4],16) ^ int(subkey_of_next_round[i],16))
+
+            for i in range(4):
+                subkey_of_next_round[i+12] = hex(int(key[i+12],16) ^ int(subkey_of_next_round[i+8],16))
+            
+            return subkey_of_next_round
+        
+
+        all_keys_list = np.zeros(11).tolist()
+        subkey_0 = np.zeros(16).tolist()
+
+        if(len(self.key)!=16):
+             print("key length should be exactly 16\n")
+        else:
+            for i in range(len(self.key)):
+                subkey_0[i] = hex(ord(self.key[i])) #note that this is column major order
+        
+        all_keys_list[0] = subkey_0
+
+        for i in range(10):
+            previous_round_key = all_keys_list[i]
+            all_keys_list[i+1] = keyexpansion_singleround(previous_round_key, i+1)
+            previous_round_key = all_keys_list[i+1]
+
+        return all_keys_list
+    
+
+    def aes_single_round(self, message, round):
+            
+        new_message = np.zeros(16).tolist()
+        
+        #BYTE SUBSTITUTION:
+        for i in range(16):
+            new_message[i] = hex(self.sbox[int(message[i],16)])
+        
+        
+        #SHIFT ROWS
+        temp             = new_message[1]
+        new_message[1]   = new_message[5]
+        new_message[5]   = new_message[9]
+        new_message[9]   = new_message[13]
+        new_message[13]  = temp
+
+        temp1            = new_message[2]
+        temp2            = new_message[6]  
+        new_message[2]   = new_message[10]
+        new_message[6]   = new_message[14]
+        new_message[10]  = temp1
+        new_message[14]  = temp2
+
+        temp             = new_message[15]
+        new_message[15]  = new_message[11]
+        new_message[11]  = new_message[7]
+        new_message[7]   = new_message[3]
+        new_message[3]  = temp
+        
+
+        #MIX COLUMNS
+        def mixcolumns(message):
+            C = [2,3,1,1,
+                 1,2,3,1,
+                 1,1,2,3,
+                 3,1,1,2]
+            mix_buffer = np.zeros(16).tolist()
+
+            xtime = lambda a: (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
+
+            def galois_field_multiplication(hexa_value,times):
+
+                
+
+                if(times==1):
+                    return int(hexa_value,16)
+                
+                if(times==2):
+                    return xtime(int(hexa_value,16))
+                
+                if(times==3):
+                    return xtime(int(hexa_value,16))^int(hexa_value,16)
+            
+            for j in range(4):
+                for i in range(4):
+                    sum = 0x0
+                    for k in range(4):
+                        sum = sum ^ galois_field_multiplication(message[4*j+k],C[4*i+k])
+                    mix_buffer[4*j+i]=hex(sum)
+            return(mix_buffer)
+        
+        if(round < 10):
+            new_message = mixcolumns(new_message)
+        
+        #ADD ROUND KEY
+        def add_round_key(message,round):
+            ark_buffer = np.zeros(16).tolist()
+            for i in range(16):
+                ark_buffer[i] = hex(int(message[i],16) ^ int(self.subkeys[round][i],16))
+
+            return ark_buffer
+        
+        
+        new_message = add_round_key(new_message,round)
+        return new_message
+          
+    def aes_encrypt(self):
+
+        all_message_list = np.zeros(11).tolist()
+
+        message = np.zeros(16).tolist()
+
+        if(len(self.message)!=16):
+             print("message length should be exactly 16\n")
+        else:
+            for i in range(len(self.message)):
+                message[i]=hex(ord(self.message[i])) #note that this is column major order
+        
+        #ADD ROUND KEY before entering to 1st round
+        message_0 = np.zeros(16).tolist()
+        for i in range(16):
+            message_0[i] = hex(int(message[i],16) ^ int(self.subkeys[0][i],16))
+
+        #REMAINING ALL     
+        all_message_list[0] = message_0
+        for i in range(10):
+            all_message_list[i+1] = self.aes_single_round(all_message_list[i],i+1)
+           
+        return(all_message_list[10])
+    
+    def aes_fault(self,round,byte,value):
+
+        all_message_list = np.zeros(11).tolist()
+        
+        message = np.zeros(16).tolist()
+        if(len(self.message)!=16):
+             print("message length should be exactly 16\n")
+        else:
+            for i in range(len(self.message)):
+                message[i]=hex(ord(self.message[i])) #note that this is column major order
+        
+        message_0 = np.zeros(16).tolist()
+        for i in range(16):
+            message_0[i] = hex(int(message[i],16) ^ int(self.subkeys[0][i],16))
+        
+        all_message_list[0] = message_0
+
+        for i in range(0,round-1,1):
+            all_message_list[i+1] = self.aes_single_round(all_message_list[i],i+1)
+        
+        print(all_message_list[round-1])
+        all_message_list[round-1][byte] = hex(value)
+        print(all_message_list[round-1])
+
+        for i in range(round-1,10,1):
+            all_message_list[i+1] = self.aes_single_round(all_message_list[i],i+1)
+           
+        return(all_message_list[10])
+
+
+
+               
+ 
+
+    
+
+
+
+
+new_aes = AES("secretmessagenow","satishcjisboring")
+print(new_aes.aes_fault(1,1,0xff))
