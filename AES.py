@@ -181,7 +181,8 @@ class AES:
         
         new_message = add_round_key(new_message,round)
         return new_message
-          
+
+    index = 10      
     def aes_encrypt(self):
 
         all_message_list = np.zeros(11).tolist()
@@ -204,7 +205,7 @@ class AES:
         for i in range(10):
             all_message_list[i+1] = self.aes_single_round(all_message_list[i],i+1)
            
-        return(all_message_list[10])
+        return(all_message_list[self.index])
     
     def aes_fault(self,round,byte,value):
 
@@ -226,14 +227,14 @@ class AES:
         for i in range(0,round-1,1):
             all_message_list[i+1] = self.aes_single_round(all_message_list[i],i+1)
         
-        print(all_message_list[round-1])
+        #print(all_message_list[round-1])
         all_message_list[round-1][byte] = hex(value)
-        print(all_message_list[round-1])
+        #print(all_message_list[round-1])
 
         for i in range(round-1,10,1):
             all_message_list[i+1] = self.aes_single_round(all_message_list[i],i+1)
            
-        return(all_message_list[10])
+        return(all_message_list[self.index])
 
 
 
@@ -245,5 +246,7 @@ class AES:
 
 
 
-new_aes = AES("secretmessagenow","satishcjisboring")
-print(new_aes.aes_fault(1,1,0xff))
+new_aes = AES("computersciences","shoaibahamed1234")
+print(new_aes.keyexpansion()[10])
+print(new_aes.aes_encrypt())
+print(new_aes.aes_fault(8,0,0xff))
